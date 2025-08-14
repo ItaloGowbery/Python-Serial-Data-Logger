@@ -1,0 +1,5 @@
+pyserial
+ttkbootstrap
+matplotlib
+pandas
+pyinstaller

@@ -7,6 +7,9 @@ from tkinter import ttk, filedialog
 import ttkbootstrap as tb
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import pandas as pd
+from datetime import datetime
+
 
 # --- Variáveis globais ---
 ser = None
@@ -38,8 +41,14 @@ def start_reading():
     try:
         ser = serial.Serial(port, baud_rate, timeout=1)
         running = True
+
+        # --- REINICIA DADOS ---
         data = []
         tempo_total = 0
+        tree.delete(*tree.get_children())  # limpa a tabela
+        ax.clear()  # limpa o gráfico
+        canvas.draw()
+
         start_btn.config(state="disabled")
         stop_btn.config(state="normal")
         status_label.config(text=f"Lendo dados de {port}...")
@@ -47,6 +56,7 @@ def start_reading():
         threading.Thread(target=read_serial, daemon=True).start()
     except serial.SerialException as e:
         status_label.config(text=f"Erro: porta em uso ou inacessível ({e})")
+
 
 def read_serial():
     global running, data, ser, tempo_total
@@ -77,15 +87,20 @@ def stop_and_save():
     stop_btn.config(state="disabled")
     status_label.config(text="Leitura parada.")
 
+    # Nome sugerido baseado na data/hora
+    suggested_name = datetime.now().strftime('data_%Y%m%d_%H%M%S')
+
     filename = filedialog.asksaveasfilename(
-        defaultextension=".txt",
-        filetypes=[("Arquivo texto", "*.txt"), ("Todos os arquivos", "*.*")]
+        defaultextension=".xlsx",
+        filetypes=[("Excel files", "*.xlsx"), ("Todos os arquivos", "*.*")],
+        initialfile=suggested_name
     )
 
     if filename:
-        with open(filename, "w") as f:
-            for row in data:
-                f.write(",".join(map(str, row)) + "\n")
+        # Cria DataFrame com os dados
+        colunas = ["Tempo (s)", "MQ3v", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
+        df = pd.DataFrame(data, columns=colunas)
+        df.to_excel(filename, index=False)
         status_label.config(text=f"Dados salvos em {filename}")
     else:
         status_label.config(text="Salvamento cancelado.")
@@ -120,7 +135,7 @@ def atualizar_grafico():
 
 # --- Interface gráfica ---
 root = tb.Window(themename="litera")
-root.title("Leitor Serial Arduino")
+root.title("Leitor Serial Enose")
 root.geometry("1200x700")
 
 # Top Frame
