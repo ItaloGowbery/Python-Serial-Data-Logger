@@ -125,7 +125,7 @@ def atualizar_grafico():
         return
 
     tempos = [row[0] for row in data]
-    nomes = ["MQ3v", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
+    nomes = ["MQ3", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
 
     for i, label in enumerate(nomes, start=1):
         valores = [row[i] for row in data]
