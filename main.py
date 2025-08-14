@@ -138,24 +138,35 @@ atualizar_btn.pack(side="right", padx=5)
 main_frame = ttk.Frame(root)
 main_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
-# Treeview
+# Configuração para 50/50 usando frames separados
+main_frame.columnconfigure(0, weight=1, uniform="group")
+main_frame.columnconfigure(1, weight=1, uniform="group")
+main_frame.rowconfigure(0, weight=1)
+
+# Frame da Tabela
+table_frame = ttk.Frame(main_frame)
+table_frame.grid(row=0, column=0, sticky="nsew")
+
 colunas = ["Tempo (s)", "MQ3v", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
-tree = ttk.Treeview(main_frame, columns=colunas, show="headings")
+tree = ttk.Treeview(table_frame, columns=colunas, show="headings")
 for col in colunas:
     tree.heading(col, text=col)
-    tree.column(col, width=100, anchor="center")
+    tree.column(col, width=80, anchor="center")
 
-scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=tree.yview)
+scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
 tree.configure(yscroll=scrollbar.set)
 
 tree.pack(side="left", fill="both", expand=True)
-scrollbar.pack(side="left", fill="y")
+scrollbar.pack(side="right", fill="y")
 
-# Gráfico
+# Frame do Gráfico
+graph_frame = ttk.Frame(main_frame)
+graph_frame.grid(row=0, column=1, sticky="nsew")
+
 fig = Figure(figsize=(5, 4), dpi=100)
 ax = fig.add_subplot(111)
-canvas = FigureCanvasTkAgg(fig, master=main_frame)
-canvas.get_tk_widget().pack(side="right", fill="both", expand=True)
+canvas = FigureCanvasTkAgg(fig, master=graph_frame)
+canvas.get_tk_widget().pack(fill="both", expand=True)
 
 # Footer
 footer = ttk.Frame(root)
