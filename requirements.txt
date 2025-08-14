@@ -3,3 +3,4 @@ ttkbootstrap
 matplotlib
 pandas
 pyinstaller
+openpyxl

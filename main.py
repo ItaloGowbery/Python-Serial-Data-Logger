@@ -9,7 +9,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
 from datetime import datetime
-
+import os
 
 # --- Variáveis globais ---
 ser = None
@@ -43,7 +43,7 @@ def start_reading():
         running = True
 
         # --- REINICIA DADOS ---
-        data = []
+        data.clear()
         tempo_total = 0
         tree.delete(*tree.get_children())  # limpa a tabela
         ax.clear()  # limpa o gráfico
@@ -57,7 +57,6 @@ def start_reading():
     except serial.SerialException as e:
         status_label.config(text=f"Erro: porta em uso ou inacessível ({e})")
 
-
 def read_serial():
     global running, data, ser, tempo_total
 
@@ -65,7 +64,6 @@ def read_serial():
         try:
             if ser.in_waiting:
                 line = ser.readline().decode("utf-8", errors='replace').strip()
-                print(line)  # mantém saída no terminal
                 valores = line.split(",")
 
                 if len(valores) == 6:
@@ -87,17 +85,19 @@ def stop_and_save():
     stop_btn.config(state="disabled")
     status_label.config(text="Leitura parada.")
 
-    # Nome sugerido baseado na data/hora
     suggested_name = datetime.now().strftime('data_%Y%m%d_%H%M%S')
 
+    # Diretório inicial: Documentos do usuário
+    documents_path = os.path.join(os.path.expanduser("~"), "Documents")
+
     filename = filedialog.asksaveasfilename(
+        initialdir=documents_path,
         defaultextension=".xlsx",
-        filetypes=[("Excel files", "*.xlsx"), ("Todos os arquivos", "*.*")],
+        filetypes=[(".xlsx", "*.xlsx"), ("Todos os arquivos", "*.*")],
         initialfile=suggested_name
     )
 
     if filename:
-        # Cria DataFrame com os dados
         colunas = ["Tempo (s)", "MQ3v", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
         df = pd.DataFrame(data, columns=colunas)
         df.to_excel(filename, index=False)
@@ -121,6 +121,7 @@ def atualizar_grafico():
     ax.set_ylim(0, 1023)
 
     if not data:
+        canvas.draw()
         return
 
     tempos = [row[0] for row in data]
@@ -142,7 +143,6 @@ root.geometry("1200x700")
 top_frame = ttk.Frame(root)
 top_frame.pack(side="top", fill="x", pady=5, padx=5)
 
-# Porta selector
 porta_var = tk.StringVar()
 porta_menu = ttk.Combobox(top_frame, textvariable=porta_var, width=20, state="readonly")
 porta_menu.pack(side="right", padx=5)
@@ -153,14 +153,14 @@ atualizar_btn.pack(side="right", padx=5)
 main_frame = ttk.Frame(root)
 main_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
-# Configuração para 50/50 usando frames separados
 main_frame.columnconfigure(0, weight=1, uniform="group")
 main_frame.columnconfigure(1, weight=1, uniform="group")
 main_frame.rowconfigure(0, weight=1)
 
-# Frame da Tabela
-table_frame = ttk.Frame(main_frame)
+# Frame da Tabela (menor)
+table_frame = ttk.Frame(main_frame, width=550)
 table_frame.grid(row=0, column=0, sticky="nsew")
+table_frame.grid_propagate(False)
 
 colunas = ["Tempo (s)", "MQ3v", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
 tree = ttk.Treeview(table_frame, columns=colunas, show="headings")
@@ -170,22 +170,22 @@ for col in colunas:
 
 scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
 tree.configure(yscroll=scrollbar.set)
-
 tree.pack(side="left", fill="both", expand=True)
 scrollbar.pack(side="right", fill="y")
 
-# Frame do Gráfico
-graph_frame = ttk.Frame(main_frame)
+# Frame do Gráfico (menor)
+graph_frame = ttk.Frame(main_frame, width=550)
 graph_frame.grid(row=0, column=1, sticky="nsew")
+graph_frame.grid_propagate(False)
 
-fig = Figure(figsize=(5, 4), dpi=100)
+fig = Figure(figsize=(4.5, 3), dpi=100)
 ax = fig.add_subplot(111)
 canvas = FigureCanvasTkAgg(fig, master=graph_frame)
 canvas.get_tk_widget().pack(fill="both", expand=True)
 
-# Footer
+# Footer (com padding extra para não encostar na barra de tarefas)
 footer = ttk.Frame(root)
-footer.pack(side="bottom", fill="x", pady=5, padx=5)
+footer.pack(side="bottom", fill="x", pady=(10, 20), padx=5)
 
 start_btn = tb.Button(footer, text="Iniciar", command=start_reading, bootstyle="success")
 start_btn.pack(side="left", padx=5)
