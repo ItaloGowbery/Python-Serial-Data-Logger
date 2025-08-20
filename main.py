@@ -17,6 +17,7 @@ baud_rate = 9600
 running = False
 data = []
 tempo_total = 0
+delay = 1  # delay inicial em segundos (mínimo 1s)
 
 # --- Funções de porta serial ---
 def list_serial_ports():
@@ -31,7 +32,7 @@ def atualizar_portas():
 
 # --- Funções principais ---
 def start_reading():
-    global ser, running, data, tempo_total
+    global ser, running, data, tempo_total, delay, last_read_time
 
     port = porta_var.get()
     if not port:
@@ -39,26 +40,39 @@ def start_reading():
         return
 
     try:
+        # Atualiza o delay a partir da Spinbox no momento do start
+        try:
+            delay_ms = int(delay_spinbox.get())
+            delay = delay_ms # converte para segundos
+        except ValueError:
+            delay = 1.0  # valor padrão caso inválido
+
+        last_read_time = 0  # reseta tempo da última leitura
+
         ser = serial.Serial(port, baud_rate, timeout=1)
         running = True
 
         # --- REINICIA DADOS ---
         data.clear()
         tempo_total = 0
-        tree.delete(*tree.get_children())  # limpa a tabela
-        ax.clear()  # limpa o gráfico
+        tree.delete(*tree.get_children())
+        ax.clear()
         canvas.draw()
 
         start_btn.config(state="disabled")
         stop_btn.config(state="normal")
-        status_label.config(text=f"Lendo dados de {port}...")
+        status_label.config(text=f"Lendo dados de {port}... Delay: {delay}s")
 
         threading.Thread(target=read_serial, daemon=True).start()
     except serial.SerialException as e:
         status_label.config(text=f"Erro: porta em uso ou inacessível ({e})")
 
+
+
+last_read_time = 0  # tempo da última leitura registrada
+
 def read_serial():
-    global running, data, ser, tempo_total
+    global running, data, ser, tempo_total, delay, last_read_time
 
     while running:
         try:
@@ -66,13 +80,18 @@ def read_serial():
                 line = ser.readline().decode("utf-8", errors='replace').strip()
                 valores = line.split(",")
 
-                if len(valores) == 6:
-                    tempo_total += 1
-                    inserir_tabela(tempo_total, valores)
+                # registra apenas se passou o tempo do delay desde a última leitura
+                if len(valores) == 6 and (time.time() - last_read_time >= delay):
+                    last_read_time = time.time()
+                    tempo_total += delay
+                    inserir_tabela(round(tempo_total, 1), valores)
                     atualizar_grafico()
         except Exception as e:
             status_label.config(text=f"Erro na leitura: {e}")
             break
+
+        time.sleep(0.1)  # pequeno sleep para não travar a thread
+
 
 def stop_and_save():
     global running, ser, data
@@ -98,7 +117,7 @@ def stop_and_save():
     )
 
     if filename:
-        colunas = ["Tempo (s)", "MQ3v", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
+        colunas = ["Tempo (s)", "MQ3", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
         df = pd.DataFrame(data, columns=colunas)
         df.to_excel(filename, index=False)
         status_label.config(text=f"Dados salvos em {filename}")
@@ -134,18 +153,40 @@ def atualizar_grafico():
     ax.legend()
     canvas.draw()
 
+def atualizar_delay():
+    """Atualiza o valor do delay a partir da Spinbox"""
+    global delay
+    try:
+        delay_val = int(delay_spinbox.get())
+        if delay_val < 1:
+            delay_val = 1  # garante mínimo de 1 segundo
+            delay_spinbox.set(1)
+        delay = delay_val
+        status_label.config(text=f"Delay atualizado: {delay} s")
+    except ValueError:
+        status_label.config(text="Valor inválido para delay.")
+
 # --- Interface gráfica ---
 root = tb.Window(themename="litera")
-root.title("Leitor Serial Enose")
+root.title("Enose Serial Reader")
 root.geometry("1200x700")
 
 # Top Frame
 top_frame = ttk.Frame(root)
 top_frame.pack(side="top", fill="x", pady=5, padx=5)
 
+# --- Spinbox de Delay (em segundos) ---
+delay_label = ttk.Label(top_frame, text="Delay (s):")
+delay_label.pack(side="left", padx=5)
+
+delay_spinbox = ttk.Spinbox(top_frame, from_=1, to=60, increment=1, width=10, command=atualizar_delay)
+delay_spinbox.set(delay)  # valor inicial em segundos
+delay_spinbox.pack(side="left", padx=5)
+
 porta_var = tk.StringVar()
 porta_menu = ttk.Combobox(top_frame, textvariable=porta_var, width=20, state="readonly")
 porta_menu.pack(side="right", padx=5)
+
 atualizar_btn = tb.Button(top_frame, text="Atualizar Portas", command=atualizar_portas, bootstyle="secondary")
 atualizar_btn.pack(side="right", padx=5)
 
@@ -162,7 +203,7 @@ table_frame = ttk.Frame(main_frame, width=550)
 table_frame.grid(row=0, column=0, sticky="nsew")
 table_frame.grid_propagate(False)
 
-colunas = ["Tempo (s)", "MQ3v", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
+colunas = ["Tempo (s)", "MQ3", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
 tree = ttk.Treeview(table_frame, columns=colunas, show="headings")
 for col in colunas:
     tree.heading(col, text=col)
@@ -183,7 +224,7 @@ ax = fig.add_subplot(111)
 canvas = FigureCanvasTkAgg(fig, master=graph_frame)
 canvas.get_tk_widget().pack(fill="both", expand=True)
 
-# Footer (com padding extra para não encostar na barra de tarefas)
+# Footer
 footer = ttk.Frame(root)
 footer.pack(side="bottom", fill="x", pady=(10, 20), padx=5)
 
