@@ -81,7 +81,7 @@ def read_serial():
                 valores = line.split(",")
 
                 # registra apenas se passou o tempo do delay desde a última leitura
-                if len(valores) == 6 and (time.time() - last_read_time >= delay):
+                if len(valores) == 8 and (time.time() - last_read_time >= delay):
                     last_read_time = time.time()
                     tempo_total += delay
                     inserir_tabela(round(tempo_total, 1), valores)
@@ -117,7 +117,7 @@ def stop_and_save():
     )
 
     if filename:
-        colunas = ["Tempo (s)", "MQ3", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
+        colunas = ["Tempo (s)", "MQ3", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100", "Temp", "Humd"]
         df = pd.DataFrame(data, columns=colunas)
         df.to_excel(filename, index=False)
         status_label.config(text=f"Dados salvos em {filename}")
@@ -144,7 +144,7 @@ def atualizar_grafico():
         return
 
     tempos = [row[0] for row in data]
-    nomes = ["MQ3", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
+    nomes = ["MQ3", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100", "Temp", "Humd"]
 
     for i, label in enumerate(nomes, start=1):
         valores = [row[i] for row in data]
@@ -203,7 +203,7 @@ table_frame = ttk.Frame(main_frame, width=550)
 table_frame.grid(row=0, column=0, sticky="nsew")
 table_frame.grid_propagate(False)
 
-colunas = ["Tempo (s)", "MQ3", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100"]
+colunas = ["Tempo (s)", "MQ3", "MQ4", "MQ6", "MQ7", "MQ135", "MCU1100", "Temp", "Humd"]
 tree = ttk.Treeview(table_frame, columns=colunas, show="headings")
 for col in colunas:
     tree.heading(col, text=col)
