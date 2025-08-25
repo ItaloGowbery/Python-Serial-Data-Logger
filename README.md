@@ -15,6 +15,12 @@ O código foi configurado para receber valores por leitura.
 * **Salvar Dados:** Os dados coletados podem ser salvos em um arquivo Excel (.xlsx) após a leitura.
 
 ---
+### Interface
+
+![Texto alternativo](interface.png)
+
+
+---
 
 ### Requisitos
 
