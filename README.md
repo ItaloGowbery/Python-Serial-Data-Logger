@@ -1,68 +1,70 @@
-# Python Serial Data Logger com Interface Gráfica
+# Python Serial Data Logger with Graphical Interface
 
-Este é um projeto em Python com uma interface gráfica (GUI) que lê dados de uma porta serial e os exibe em tempo real em uma tabela e em um gráfico. A aplicação também salva os dados coletados em um arquivo xlsx.
+This is a Python project with a graphical user interface (GUI) that reads data from a serial port and displays it in real time in a table and a graph. The application also saves the collected data to an XLSX file.
 
-O código foi configurado para receber valores por leitura.
+The code has been configured to receive a fixed number of values per reading.
+
+---
+
+### Features
+
+* **Graphical User Interface (GUI):** Allows you to easily select the serial port and start/stop reading data.
+* **Port Detection:** The software automatically lists the serial ports available on your system.
+* **Real-time Monitoring:** Displays the received data in a table and a dynamic graph.
+* **Configurable Delay:** Allows you to adjust the time (in seconds) between each data log entry (to work properly, the microcontroller must send data every 1 second).
+* **Save Data:** Collected data can be saved to an Excel (.xlsx) file after reading.
 
 ---
 
-### Funcionalidades
-
-* **Interface Gráfica (GUI):** Permite selecionar a porta serial e iniciar/parar a leitura dos dados de forma simples.
-* **Detecção de Portas:** O software lista automaticamente as portas seriais disponíveis no seu sistema.
-* **Monitoramento em Tempo Real:** Exibe os dados recebidos em uma tabela e em um gráfico dinâmico.
-* **Delay Configurável:** Permite ajustar o tempo (em segundos) entre cada registro de dados (para funcionar adequadamente o micro controlador deve enviar dados a cada 1 segundo).
-* **Salvar Dados:** Os dados coletados podem ser salvos em um arquivo Excel (.xlsx) após a leitura.
-
----
 ### Interface
 
-![Texto alternativo](interface.png)
-
+![Alternative text](interface.png)
 
 ---
 
-### Requisitos
+### Requirements
 
-Para rodar a aplicação, você precisa das seguintes bibliotecas Python:
+To run the application, you need the following Python libraries:
 
-* **pyserial:** Para comunicação com a porta serial.
-* **ttkbootstrap:** Para o estilo moderno da interface gráfica (uma extensão do Tkinter).
-* **matplotlib:** Para plotagem de gráficos.
-* **pandas:** Para manipulação e salvamento dos dados em formato Excel.
-* **openpyxl:** Para permitir que o pandas salve arquivos .xlsx.
+* **pyserial:** For communication with the serial port.
+* **ttkbootstrap:** For the modern graphical interface style (an extension of Tkinter).
+* **matplotlib:** For plotting graphs.
+* **pandas:** For data manipulation and saving in Excel format.
+* **openpyxl:** To allow pandas to save .xlsx files.
 
-Você pode instalá-las com o seguinte comando:
+You can install them with the following command:
 
 ```bash
 pip install pyserial ttkbootstrap matplotlib pandas openpyxl
 ```
-### Formato de Dados
 
-O programa espera receber uma string com **8 valores numéricos inteiros**, separados por vírgula, terminada por uma quebra de linha (`\n`).
+### Data Format
 
-**Exemplo:**
-`valor1,valor2,valor3,valor4,valor5,valor6,valor7,valor8`
+The program expects to receive a string with **8 integer values**, separated by commas, terminated by a newline character (`\n`).
 
----
-
-### Como Adaptar para Sua Necessidade
-
-Para usar o código com uma quantidade diferente de dados ou com nomes específicos para cada valor, você precisará editar o arquivo `main.py`.
-
-1.  **Ajuste o Número de Valores:** Na função `read_serial()`, modifique a linha `if len(valores) == 8:` para o número de valores que você está enviando.
-2.  **Ajuste os Nomes e Colunas:** Na função `stop_and_save()` e em outras partes do código, edite a lista `colunas` e a lista `nomes` para corresponder aos seus dados.
+**Example:**
+`value1,value2,value3,value4,value5,value6,value7,value8`
 
 ---
 
-### Como Usar
+### How to Adapt to Your Needs
 
-1.  Clone o repositório.
-2.  Instale as bibliotecas necessárias.
-3.  Conecte seu dispositivo (Arduino, ESP32, etc.) ao computador.
-4.  Execute o script:
+To use the code with a different number of data points or with specific names for each value, you will need to edit the `main.py` file.
+
+1.  **Adjust the Number of Values:** In the `read_serial()` function, modify the line `if len(valores) == 8:` to the number of values you are sending.
+2.  **Adjust Names and Columns:** In the `stop_and_save()` function and in other parts of the code, edit the `colunas` and `nomes` lists to match your data.
+
+---
+
+### How to Use
+
+1.  Clone the repository.
+2.  Install the necessary libraries.
+3.  Connect your device (Arduino, ESP32, etc.) to the computer.
+4.  Run the script:
+   
     ```bash
     python main.py
     ```
-5.  Selecione a porta serial correta na lista e clique em **"Iniciar"**.
-6.  Para interromper a leitura e salvar os dados, clique em **"Parar e Salvar"**.
+6.  Select the correct serial port from the list and click **"Start"**.
+7.  To stop reading and save the data, click **"Stop and Save"**.
