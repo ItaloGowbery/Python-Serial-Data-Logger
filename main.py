@@ -168,7 +168,7 @@ def atualizar_delay():
 
 # --- Interface gráfica ---
 root = tb.Window(themename="litera")
-root.title("Enose Serial Reader")
+root.title("Python Serial Data Logger")
 root.geometry("1200x700")
 
 # Top Frame
@@ -228,10 +228,10 @@ canvas.get_tk_widget().pack(fill="both", expand=True)
 footer = ttk.Frame(root)
 footer.pack(side="bottom", fill="x", pady=(10, 20), padx=5)
 
-start_btn = tb.Button(footer, text="Iniciar", command=start_reading, bootstyle="success")
+start_btn = tb.Button(footer, text="Start", command=start_reading, bootstyle="success")
 start_btn.pack(side="left", padx=5)
 
-stop_btn = tb.Button(footer, text="Parar e Salvar", command=stop_and_save, bootstyle="danger", state="disabled")
+stop_btn = tb.Button(footer, text="Stop and Save", command=stop_and_save, bootstyle="danger", state="disabled")
 stop_btn.pack(side="left", padx=5)
 
 status_label = ttk.Label(footer, text="Status: Aguardando...")
