@@ -64,7 +64,7 @@ To use the code with a different number of data points or with specific names fo
 4.  Run the script:
    
     ```bash
-    python main.py
+    python main/main.py
     ```
 6.  Select the correct serial port from the list and click **"Start"**.
 7.  To stop reading and save the data, click **"Stop and Save"**.
